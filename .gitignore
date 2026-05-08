@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+pip-log.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local runtime / secrets
+.env
+.env.*
+
+# Local database / OS artifacts
+*.db
+*.sqlite
+*.sqlite3
+Thumbs.db
+Desktop.ini
+
+# Frontend (if Node tooling exists)
+node_modules/
+dist/
+build/
+.parcel-cache/
+.vite/
+

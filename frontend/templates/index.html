@@ -1,0 +1,416 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finova AI | Personal Finance Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    :root { color-scheme: dark; --bg:#030711; --panel:rgba(255,255,255,.075); --line:rgba(255,255,255,.13); --cyan:#43e7ff; --violet:#9b5cff; --lime:#b9ff5a; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: var(--bg); color: #f8fbff; overflow-x: hidden; }
+    body.light { --bg:#eef6ff; --panel:rgba(255,255,255,.72); --line:rgba(15,23,42,.12); color:#07111f; }
+    .aurora { position: fixed; inset: -20%; pointer-events:none; z-index:-2; background: radial-gradient(circle at 15% 20%, rgba(67,231,255,.35), transparent 28%), radial-gradient(circle at 75% 10%, rgba(155,92,255,.34), transparent 30%), radial-gradient(circle at 60% 80%, rgba(185,255,90,.18), transparent 24%); filter: blur(28px); animation: drift 14s ease-in-out infinite alternate; }
+    .grid-bg { position: fixed; inset:0; pointer-events:none; z-index:-1; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 52px 52px; mask-image: linear-gradient(to bottom, #000, transparent 82%); }
+    @keyframes drift { to { transform: translate3d(4%, -3%, 0) scale(1.08); } }
+    .glass { background: var(--panel); border: 1px solid var(--line); box-shadow: 0 24px 90px rgba(0,0,0,.34); backdrop-filter: blur(24px); }
+    .shine { position: relative; overflow:hidden; }
+    .shine:after { content:""; position:absolute; inset:-80% auto auto -30%; width:40%; height:240%; background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform:rotate(20deg); animation: shine 6s infinite; }
+    @keyframes shine { 0%,65%{left:-45%} 100%{left:130%} }
+    .premium-btn { background: linear-gradient(135deg, #43e7ff, #9b5cff); color:white; box-shadow: 0 14px 40px rgba(67,231,255,.22); transition:.25s; }
+    .premium-btn:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 20px 60px rgba(155,92,255,.32); }
+    .ghost-btn { border:1px solid var(--line); background:rgba(255,255,255,.06); transition:.2s; }
+    .ghost-btn:hover { background:rgba(255,255,255,.12); transform:translateY(-1px); }
+    .float-card { transform-style: preserve-3d; animation: float 5s ease-in-out infinite; }
+    .float-card:nth-child(2){ animation-delay:.8s } .float-card:nth-child(3){ animation-delay:1.4s }
+    @keyframes float { 50% { transform: translateY(-18px) rotateX(5deg) rotateY(-7deg); } }
+    .perspective-1000 { perspective: 1000px; }
+    .plan-ring { transform-style: preserve-3d; background: conic-gradient(from 120deg, #43e7ff, #9b5cff, #b9ff5a, #43e7ff); box-shadow: inset 0 0 30px rgba(3,7,17,.8), 0 24px 60px rgba(67,231,255,.18); }
+    .allocation-bar { min-height: .72rem; border-radius: 999px; background: rgba(255,255,255,.1); overflow:hidden; }
+    .allocation-bar span { display:block; height:100%; border-radius:inherit; background: linear-gradient(90deg, #43e7ff, #b9ff5a); }
+    .ticker { white-space:nowrap; animation: ticker 22s linear infinite; }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .card-hover { transition: transform .24s ease, border-color .24s ease, background .24s ease; }
+    .card-hover:hover { transform: translateY(-5px); border-color: rgba(67,231,255,.45); background: rgba(255,255,255,.1); }
+    .sidebar-link { display:flex; align-items:center; gap:.7rem; padding:.8rem .9rem; border-radius:14px; color:rgba(255,255,255,.72); transition:.2s; }
+    .sidebar-link:hover, .sidebar-link.active { color:white; background:rgba(255,255,255,.1); }
+    body.light .sidebar-link { color:rgba(7,17,31,.68); }
+    body.light .sidebar-link:hover, body.light .sidebar-link.active { color:#07111f; background:rgba(15,23,42,.08); }
+    input, select, textarea { background:rgba(255,255,255,.08); border:1px solid var(--line); color:inherit; outline:none; border-radius:14px; padding:.85rem .95rem; width:100%; transition:.2s; }
+    select option { color:#07111f; }
+    input:focus, select:focus, textarea:focus { border-color:rgba(67,231,255,.65); box-shadow:0 0 0 4px rgba(67,231,255,.1); }
+    .mini-bar { height: 7px; border-radius: 999px; background: linear-gradient(90deg, #43e7ff, #9b5cff, #b9ff5a); }
+    .toast { position:fixed; right:18px; bottom:18px; z-index:80; transform:translateY(30px); opacity:0; transition:.25s; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .scanline { background: linear-gradient(180deg, transparent, rgba(67,231,255,.16), transparent); animation: scan 2.6s ease-in-out infinite; }
+    @keyframes scan { 0%{transform:translateY(-100%)} 100%{transform:translateY(180%)} }
+    @media (max-width: 900px) { .hero-grid, .app-grid { grid-template-columns:1fr!important; } aside { position: static!important; height:auto!important; } }
+  </style>
+</head>
+<body>
+  <div class="aurora"></div><div class="grid-bg"></div>
+
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-2xl">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+      <a href="#home" class="flex items-center gap-3 font-black tracking-tight">
+        <span class="grid h-10 w-10 place-items-center rounded-2xl bg-white text-black">F</span>
+        <span>Finova AI</span>
+      </a>
+      <div class="hidden items-center gap-7 text-sm text-white/70 md:flex">
+        <a href="#dashboard">Dashboard</a><a href="#ai">AI Features</a><a href="#invest">Investments</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="themeBtn" class="ghost-btn rounded-2xl px-4 py-2 text-sm">Theme</button>
+        <a href="#dashboard" class="premium-btn rounded-2xl px-5 py-2 text-sm font-bold">Launch App</a>
+      </div>
+    </div>
+  </nav>
+
+  <header id="home" class="relative min-h-screen overflow-hidden px-5 pt-28">
+    <canvas id="particles" class="absolute inset-0 h-full w-full opacity-60"></canvas>
+    <div class="hero-grid mx-auto grid max-w-7xl grid-cols-[1.05fr_.95fr] items-center gap-12 py-16">
+      <section class="relative z-10">
+        <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/75 backdrop-blur-xl">
+          <span class="h-2 w-2 rounded-full bg-[#b9ff5a] shadow-[0_0_18px_#b9ff5a]"></span> AI-native money intelligence
+        </div>
+        <h1 class="max-w-4xl text-5xl font-black leading-[1.02] tracking-normal md:text-7xl">
+          Finova AI
+        </h1>
+        <p class="mt-6 max-w-2xl text-lg leading-8 text-white/68">
+          A futuristic personal finance platform that tracks expenses, predicts spending, detects unusual transactions, scans receipts, and turns savings into beginner-friendly investment ideas.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a href="#dashboard" class="premium-btn rounded-2xl px-7 py-4 font-extrabold">Open Dashboard</a>
+          <button id="demoFill" class="ghost-btn rounded-2xl px-7 py-4 font-bold">Add AI Demo Expense</button>
+        </div>
+        <div class="mt-12 grid max-w-2xl grid-cols-3 gap-3">
+          <div class="glass rounded-2xl p-4"><div class="counter text-3xl font-black" data-target="98">0</div><p class="text-sm text-white/55">AI score</p></div>
+          <div class="glass rounded-2xl p-4"><div class="counter text-3xl font-black" data-target="42">0</div><p class="text-sm text-white/55">Insights</p></div>
+          <div class="glass rounded-2xl p-4"><div class="counter text-3xl font-black" data-target="12">0</div><p class="text-sm text-white/55">Charts</p></div>
+        </div>
+      </section>
+      <section class="relative z-10 min-h-[560px] perspective-1000">
+        <div class="float-card glass shine absolute right-4 top-8 w-[86%] rounded-[2rem] p-6">
+          <div class="flex items-center justify-between"><span class="text-sm text-white/55">Predicted month end</span><span class="rounded-full bg-cyan-400/15 px-3 py-1 text-xs text-cyan-200">Live AI</span></div>
+          <div id="heroPrediction" class="mt-4 text-5xl font-black">Rs. 0</div>
+          <canvas id="heroChart" height="120" class="mt-6"></canvas>
+        </div>
+        <div class="float-card glass absolute left-2 top-72 w-[58%] rounded-[1.5rem] p-5">
+          <p class="text-sm text-white/55">Smart savings found</p><div id="heroSavings" class="mt-2 text-3xl font-black text-[#b9ff5a]">Rs. 0</div><div class="mini-bar mt-4 w-3/4"></div>
+        </div>
+        <div class="float-card glass absolute bottom-6 right-2 w-[62%] rounded-[1.5rem] p-5">
+          <p class="text-sm text-white/55">Unusual spend detection</p><p id="heroFraud" class="mt-2 font-bold">Monitoring all categories</p>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <div class="overflow-hidden border-y border-white/10 bg-white/5 py-4">
+    <div class="ticker inline-flex gap-10 text-sm font-bold text-white/70">
+      <div id="marketTicker" class="inline-flex gap-10"></div>
+      <div id="marketTickerClone" class="inline-flex gap-10"></div>
+    </div>
+  </div>
+
+  <main id="dashboard" class="mx-auto max-w-7xl px-5 py-16">
+    <div class="app-grid grid grid-cols-[260px_1fr] gap-5">
+      <aside class="glass sticky top-24 h-[calc(100vh-7rem)] rounded-3xl p-4">
+        <div class="mb-5 px-2 text-xs uppercase tracking-[.25em] text-white/40">Workspace</div>
+        <div class="mb-4 space-y-2 px-1">
+          <label class="block text-xs uppercase tracking-[.22em] text-white/40">Month</label>
+          <select id="monthSelect"></select>
+          <button id="newMonthBtn" class="ghost-btn w-full rounded-2xl px-4 py-2 text-sm font-bold">Add New Month</button>
+        </div>
+        <a class="sidebar-link active" href="#overview">Overview</a>
+        <a class="sidebar-link" href="#tracker">Expense AI</a>
+        <a class="sidebar-link" href="#planner">Planner</a>
+        <a class="sidebar-link" href="#scanner">Scanner</a>
+        <a class="sidebar-link" href="#assistant">Assistant</a>
+        <button id="reportBtn" class="premium-btn mt-5 w-full rounded-2xl px-4 py-3 font-bold">Generate Report</button>
+      </aside>
+
+      <section class="space-y-5">
+        <div id="overview" class="grid grid-cols-1 gap-5 lg:grid-cols-4">
+          <div class="glass card-hover rounded-3xl p-5"><p class="text-sm text-white/55">Monthly expenses</p><h2 id="totalSpend" class="mt-2 text-3xl font-black">Rs. 0</h2></div>
+          <div class="glass card-hover rounded-3xl p-5"><p class="text-sm text-white/55">Safe savings</p><h2 id="safeSavings" class="mt-2 text-3xl font-black text-[#b9ff5a]">Rs. 0</h2></div>
+          <div class="glass card-hover rounded-3xl p-5"><p class="text-sm text-white/55">Health score</p><h2 id="healthScore" class="mt-2 text-3xl font-black">0/100</h2></div>
+          <div class="glass card-hover rounded-3xl p-5"><p class="text-sm text-white/55">Overflow risk</p><h2 id="riskScore" class="mt-2 text-3xl font-black text-cyan-200">0%</h2></div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-[1.35fr_.65fr]">
+          <div class="glass rounded-3xl p-5"><div class="mb-4 flex items-center justify-between"><h3 class="text-xl font-black">Futuristic Spend Analytics</h3><span class="text-xs text-white/45">Dynamic Chart.js</span></div><canvas id="trendChart" height="135"></canvas></div>
+          <div class="glass rounded-3xl p-5"><h3 class="text-xl font-black">Expense Breakdown</h3><canvas id="donutChart" height="200" class="mt-4"></canvas></div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 xl:grid-cols-[.95fr_1.05fr]">
+          <section id="tracker" class="glass rounded-3xl p-5">
+            <h3 class="text-xl font-black">AI Expense Tracker</h3>
+            <form id="expenseForm" class="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              <input name="amount" type="number" min="1" placeholder="Amount Rs." required>
+              <select name="category">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select>
+              <select name="payment_mode">{% for m in modes %}<option>{{ m }}</option>{% endfor %}</select>
+              <input name="date" type="date" required>
+              <input name="notes" class="md:col-span-2" placeholder="Notes, e.g. Swiggy dinner">
+              <button class="premium-btn rounded-2xl px-5 py-3 font-bold md:col-span-2">Add Expense</button>
+            </form>
+            <div class="mt-5">
+              <label class="text-sm text-white/55">AI quick add</label>
+              <div class="mt-2 flex gap-2">
+                <input id="quickText" placeholder="Try: Uber 230 or Amazon order 1499">
+                <button id="quickBtn" class="ghost-btn rounded-2xl px-5 font-bold">Classify</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="glass rounded-3xl p-5">
+            <div class="flex items-center justify-between"><h3 class="text-xl font-black">Live Transactions</h3><span id="txCount" class="text-sm text-white/45">0 items</span></div>
+            <div id="txList" class="mt-4 max-h-[420px] space-y-3 overflow-auto pr-1"></div>
+          </section>
+        </div>
+
+        <section id="planner" class="grid grid-cols-1 gap-5 xl:grid-cols-[.75fr_1.25fr]">
+          <div class="glass rounded-3xl p-5">
+            <h3 class="text-xl font-black">Monthly Income Planner</h3>
+            <form id="plannerForm" class="mt-5 space-y-3">
+              <input name="income" type="number" placeholder="Monthly income">
+              <input name="savings_goal" type="number" placeholder="Savings goal">
+              <input name="budget" type="number" placeholder="Monthly budget">
+              <button class="premium-btn w-full rounded-2xl py-3 font-bold">Recalculate AI Plan</button>
+            </form>
+            <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4"><p class="text-white/45">Spend limit</p><b id="planLimit" class="mt-1 block text-lg">Rs. 0</b></div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 p-4"><p class="text-white/45">Budget left</p><b id="planLeft" class="mt-1 block text-lg">Rs. 0</b></div>
+            </div>
+          </div>
+          <div id="ai" class="glass rounded-3xl p-5">
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-[220px_1fr]">
+              <div class="grid place-items-center">
+                <div class="plan-ring grid h-44 w-44 place-items-center rounded-full">
+                  <div class="grid h-28 w-28 place-items-center rounded-full bg-[#030711]/90 text-center">
+                    <span class="text-xs text-white/45">Investable</span>
+                    <b id="investableAmount" class="text-xl">Rs. 0</b>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 id="planHeadline" class="text-xl font-black">AI Financial Plan</h3>
+                <p id="planNote" class="mt-2 text-sm leading-6 text-white/58">Enter income, savings goal, and budget to build a realistic plan.</p>
+                <div id="allocationList" class="mt-4 space-y-3"></div>
+              </div>
+            </div>
+            <h3 class="mt-6 text-xl font-black">AI Financial Insights</h3>
+            <div id="insights" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2"></div>
+            <div class="mt-5"><p class="mb-2 text-sm text-white/55">Spending heatmap</p><div id="heatmap" class="grid grid-cols-7 gap-2"></div></div>
+          </div>
+        </section>
+
+        <section id="invest" class="glass rounded-3xl p-5">
+          <div class="flex flex-wrap items-center justify-between gap-3"><h3 class="text-xl font-black">Educational Investment Suggestions</h3><span class="rounded-full bg-white/10 px-3 py-1 text-xs text-white/55">Demo only, not financial advice</span></div>
+          <div id="stocks" class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"></div>
+        </section>
+
+        <section id="scanner" class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div class="glass rounded-3xl p-5">
+            <h3 class="text-xl font-black">Receipt/Bill Scanner</h3>
+            <form id="scanForm" class="mt-5 space-y-3">
+              <div class="relative grid min-h-44 place-items-center overflow-hidden rounded-3xl border border-dashed border-white/20 bg-white/5 p-6 text-center">
+                <div class="scanline absolute inset-x-0 top-0 h-20"></div>
+                <input name="receipt" type="file" accept="image/*" required>
+                <p class="mt-3 text-sm text-white/50">OCR uses Tesseract if installed; otherwise filename fallback keeps the demo moving.</p>
+              </div>
+              <button class="premium-btn w-full rounded-2xl py-3 font-bold">Scan and Add Expense</button>
+            </form>
+          </div>
+          <div id="assistant" class="glass rounded-3xl p-5">
+            <h3 class="text-xl font-black">AI Financial Assistant</h3>
+            <div id="chatBox" class="mt-4 h-56 overflow-auto rounded-3xl border border-white/10 bg-black/10 p-4 text-sm"></div>
+            <div class="mt-3 flex gap-2"><input id="chatInput" placeholder="Ask: Where did I spend most money?"><button id="chatBtn" class="premium-btn rounded-2xl px-5 font-bold">Ask</button></div>
+          </div>
+        </section>
+
+        <section class="glass rounded-3xl p-5">
+          <h3 class="text-xl font-black">AI Monthly Report</h3>
+          <pre id="reportBox" class="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-3xl bg-black/20 p-5 text-sm text-white/75">Generate a report to create your presentation-ready finance summary.</pre>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast glass rounded-2xl px-5 py-3 text-sm font-bold"></div>
+
+  <script>
+    const rupee = n => 'Rs. ' + Math.round(Number(n || 0)).toLocaleString('en-IN');
+    let state = null, trendChart, donutChart, heroChart;
+    let activeMonth = new Date().toISOString().slice(0,7);
+    let toastTimer = null;
+
+    function toast(msg){
+      const el=document.getElementById('toast');
+      el.textContent=msg;
+      el.classList.add('show');
+      if(toastTimer) clearTimeout(toastTimer);
+      toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
+    }
+    async function api(url, options={}){
+      const r=await fetch(url, options);
+      let data=null;
+      try{ data=await r.json(); }catch(_e){ data=null; }
+      if(!r.ok) throw new Error((data && data.error) || 'Request failed');
+      return data;
+    }
+
+    function pct(x){
+      if(x === null || x === undefined || Number.isNaN(Number(x))) return '';
+      const v = Number(x);
+      const sign = v > 0 ? '+' : '';
+      return `${sign}${v.toFixed(2)}%`;
+    }
+
+    function makeChart(ctx, type, labels, data, colors){
+      return new Chart(ctx, {type, data:{labels, datasets:[{data, borderColor:'#43e7ff', backgroundColor:colors || 'rgba(67,231,255,.16)', fill:true, tension:.42, borderWidth:2}]}, options:{responsive:true, plugins:{legend:{labels:{color:'rgba(255,255,255,.68)'}}}, scales:type==='doughnut'?{}:{x:{ticks:{color:'rgba(255,255,255,.48)'}, grid:{color:'rgba(255,255,255,.06)'}}, y:{ticks:{color:'rgba(255,255,255,.48)'}, grid:{color:'rgba(255,255,255,.06)'}}}}});
+    }
+
+    function render(s){
+      state = s;
+      const ai=s.ai, p=s.planner;
+      totalSpend.textContent=rupee(ai.total); safeSavings.textContent=rupee(ai.safe_savings); healthScore.textContent=ai.health+'/100'; riskScore.textContent=ai.risk+'%';
+      heroPrediction.textContent=rupee(ai.prediction.prediction); heroSavings.textContent=rupee(ai.safe_savings); heroFraud.textContent=(ai.fraud[0] || 'No unusual spending detected');
+      document.querySelector('[name=income]').value=p.income; document.querySelector('[name=savings_goal]').value=p.savings_goal; document.querySelector('[name=budget]').value=p.budget;
+      document.querySelector('[name=date]').valueAsDate = new Date();
+      planLimit.textContent=rupee(ai.planner_summary.spend_limit); planLeft.textContent=rupee(ai.planner_summary.remaining_budget);
+      investableAmount.textContent=rupee(ai.investment_plan.investable); planHeadline.textContent=ai.investment_plan.headline; planNote.textContent=ai.investment_plan.note;
+      allocationList.innerHTML=ai.investment_plan.allocation.length ? ai.investment_plan.allocation.map(a=>`<div><div class="mb-1 flex items-center justify-between text-sm"><span>${a.label}</span><b>${a.percent}% - ${rupee(a.amount)}</b></div><div class="allocation-bar"><span style="width:${a.percent}%"></span></div></div>`).join('') : `<div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/55">${ai.investment_plan.note}</div>`;
+
+      const labels=Object.keys(ai.daily_totals), vals=Object.values(ai.daily_totals);
+      if(trendChart) trendChart.destroy(); trendChart=makeChart(trendChartEl, 'line', labels, vals, 'rgba(67,231,255,.18)');
+      if(donutChart) donutChart.destroy(); donutChart=makeChart(donutChartEl, 'doughnut', Object.keys(ai.category_totals), Object.values(ai.category_totals), ['#43e7ff','#9b5cff','#b9ff5a','#ffcc66','#ff6b9b','#6ef3bd','#8ea0ff']);
+      if(heroChart) heroChart.destroy(); heroChart=makeChart(heroChartEl, 'line', ai.prediction.trend.map((_,i)=>'D'+(i*5+1)), ai.prediction.trend, 'rgba(155,92,255,.2)');
+
+      txCount.textContent=s.transactions.length+' items';
+      txList.innerHTML=s.transactions.length ? s.transactions.map(t=>`<div class="card-hover rounded-2xl border border-white/10 bg-white/5 p-4"><div class="flex items-center justify-between gap-3"><div><b>${t.notes || t.category}</b><p class="text-sm text-white/45">${t.category} - ${t.payment_mode} - ${t.date}</p></div><div class="text-xl font-black">${rupee(t.amount)}</div></div></div>`).join('') : `<div class="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/55">No transactions yet. Add an expense to activate the planner.</div>`;
+      insights.innerHTML=[...ai.suggestions, ...ai.fraud.map(f=>'Unusual: '+f)].map(x=>`<div class="card-hover rounded-2xl border border-white/10 bg-white/5 p-4 text-sm">${x}</div>`).join('');
+      heatmap.innerHTML=ai.heatmap.map(v=>`<div title="${v} intensity" class="h-9 rounded-xl border border-white/10" style="background:rgba(${67+v},${120+v},255,${.08+v/170})"></div>`).join('');
+      stocks.innerHTML=ai.stocks.length ? ai.stocks.map((st,i)=>{
+        const q = st.quote;
+        const price = q && q.price !== null && q.price !== undefined ? q.price : null;
+        const ch = q ? q.change_percent : null;
+        const liveLine = price === null ? `<span class="text-xs text-white/40">Live quote unavailable</span>` : `<span class="text-xs text-white/55">Live: <b class="text-white">${price}</b> <b class="${(ch||0)>=0?'text-[#b9ff5a]':'text-[#ff6b9b]'}">${pct(ch)}</b></span>`;
+        return `<div class="card-hover rounded-3xl border border-white/10 bg-white/5 p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <h4 class="font-black">${st.symbol}</h4>
+              <p class="mt-1 text-xs text-white/45">${st.name}</p>
+              <div class="mt-2">${liveLine}</div>
+            </div>
+            <span class="rounded-full bg-white/10 px-2 py-1 text-xs">${st.risk}</span>
+          </div>
+          <p class="mt-4 text-sm text-white/62">${st.insight}</p>
+          <div class="mt-4 flex items-end gap-1">${st.spark.map(v=>`<span class="flex-1 rounded-t bg-cyan-300/70" style="height:${v}px"></span>`).join('')}</div>
+          <div class="mt-4 flex justify-between text-sm"><span>${st.sector}</span><b class="text-[#b9ff5a]">${st.growth}</b></div>
+        </div>`;
+      }).join('') : `<div class="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-white/55">${ai.investment_plan.note}</div>`;
+      
+      const tickerItems = (ai.market_ticker || []).map(st=>{
+        const q = st.quote;
+        const p = q && q.price !== null && q.price !== undefined ? q.price : null;
+        const ch = q ? q.change_percent : null;
+        const priceStr = p === null ? '' : ` ${p}`;
+        const chStr = ch === null ? '' : ` ${pct(ch)}`;
+        return `<span>${st.symbol}${chStr}${priceStr}</span>`;
+      }).join('');
+      marketTicker.innerHTML = tickerItems || '<span>Market data unavailable</span>';
+      marketTickerClone.innerHTML = marketTicker.innerHTML;
+
+      if(Array.isArray(s.months) && monthSelect){
+        const opts = ['<option value="">All months</option>']
+          .concat(s.months.map(m=>`<option value="${m.month}">${m.month} (${rupee(m.total)} • ${m.count} tx)</option>`));
+        monthSelect.innerHTML = opts.join('');
+        const wanted = (s.active_month === null || s.active_month === undefined) ? activeMonth : s.active_month;
+        monthSelect.value = wanted || '';
+      }
+
+      gsap.from('.card-hover', {opacity:0, y:18, stagger:.025, duration:.45, ease:'power2.out'});
+    }
+
+    async function load(){
+      const qs = activeMonth ? ('?month=' + encodeURIComponent(activeMonth)) : '';
+      render(await api('/api/state' + qs));
+    }
+
+    expenseForm.onsubmit=async e=>{
+      e.preventDefault();
+      try{
+        const body=Object.fromEntries(new FormData(e.target));
+        await api('/api/expense',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        await load();
+        e.target.notes.value='';
+        e.target.amount.value='';
+        toast('Expense added');
+      }catch(err){ toast(err.message || 'Failed to add expense'); }
+    };
+    quickBtn.onclick=async()=>{ try{ const data=await api('/api/quick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:quickText.value})}); await load(); quickText.value=''; toast('AI categorized as '+data.category); }catch(e){toast(e.message)} };
+    plannerForm.onsubmit=async e=>{
+      e.preventDefault();
+      try{
+        const body=Object.fromEntries(new FormData(e.target));
+        await api('/api/planner',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        await load();
+        toast('Planner updated');
+      }catch(err){ toast(err.message || 'Planner update failed'); }
+    };
+    scanForm.onsubmit=async e=>{
+      e.preventDefault();
+      try{
+        await api('/api/scan',{method:'POST',body:new FormData(e.target)});
+        await load();
+        toast('Receipt scanned and added');
+      }catch(err){ toast(err.message || 'Scan failed'); }
+    };
+    chatBtn.onclick=async()=>{ const q=chatInput.value.trim(); if(!q) return; chatBox.innerHTML+=`<p class="mb-3 text-right"><span class="inline-block rounded-2xl bg-white/10 px-4 py-2">${q}</span></p>`; chatInput.value=''; const data=await api('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q})}); chatBox.innerHTML+=`<p class="mb-3"><span class="inline-block rounded-2xl bg-cyan-400/15 px-4 py-2">${data.reply}</span></p>`; chatBox.scrollTop=chatBox.scrollHeight; };
+    reportBtn.onclick=async()=>{
+      try{
+        const data=await api('/api/report',{method:'POST'});
+        reportBox.textContent=data.report;
+        toast('AI report generated');
+      }catch(err){ toast(err.message || 'Report failed'); }
+    };
+    demoFill.onclick=async()=>{ quickText.value='Swiggy premium dinner 450'; quickBtn.click(); location.hash='dashboard'; };
+    themeBtn.onclick=()=>document.body.classList.toggle('light');
+
+    monthSelect.onchange=async()=>{
+      activeMonth = monthSelect.value || '';
+      try{ await load(); }catch(err){ toast(err.message || 'Failed to load month'); }
+    };
+    newMonthBtn.onclick=async()=>{
+      const m = prompt('Enter month as YYYY-MM', new Date().toISOString().slice(0,7));
+      if(!m) return;
+      try{
+        await api('/api/months/new',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month:m})});
+        activeMonth = m;
+        await load();
+        toast('Month added');
+      }catch(err){ toast(err.message || 'Failed to add month'); }
+    };
+
+    addEventListener('unhandledrejection', (e)=>{ toast((e.reason && e.reason.message) || 'Request failed'); e.preventDefault && e.preventDefault(); });
+    addEventListener('error', (e)=>{ toast(e.message || 'Unexpected error'); });
+
+    document.querySelectorAll('.counter').forEach(el=>gsap.to(el,{innerText:el.dataset.target,duration:1.8,snap:{innerText:1},ease:'power2.out',delay:.4}));
+    gsap.from('h1, header p, header .premium-btn, header .ghost-btn', {opacity:0, y:30, stagger:.12, duration:.9, ease:'power3.out'});
+
+    const canvas=document.getElementById('particles'), ctx=canvas.getContext('2d'); let pts=[];
+    function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; pts=Array.from({length:90},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-.5)*.45,vy:(Math.random()-.5)*.45})); }
+    function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach((p,i)=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;ctx.fillStyle='rgba(67,231,255,.6)';ctx.beginPath();ctx.arc(p.x,p.y,1.4,0,Math.PI*2);ctx.fill(); for(let j=i+1;j<pts.length;j++){const q=pts[j],d=Math.hypot(p.x-q.x,p.y-q.y); if(d<120){ctx.strokeStyle=`rgba(155,92,255,${1-d/120})`;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}}); requestAnimationFrame(draw); }
+    const trendChartEl=document.getElementById('trendChart'), donutChartEl=document.getElementById('donutChart'), heroChartEl=document.getElementById('heroChart');
+    resize(); draw(); addEventListener('resize', resize); load();
+  </script>
+</body>
+</html>
+
